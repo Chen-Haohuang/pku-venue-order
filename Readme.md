@@ -27,6 +27,7 @@
 ```
 
 ### 运行
+main.py line 51为提交订单按钮，非尝试运行取消注释，预约成功后应在十分钟内手动付款。
 填充完成config.json。在238服务器上，google chrome环境已有。装好相应python package即可。
 ```shell
 python main.py
