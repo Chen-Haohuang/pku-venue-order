@@ -48,7 +48,7 @@ class PKUVenue():
 
 		print("submiting order ....... ")
 		self.browser.typeByXPath("/html/body/div[1]/div/div/div[3]/div[2]/div/div[2]/form/div/div[4]/div/div/div/div/input", self.phone)
-		# self.clickByXPath("/html/body/div[1]/div/div/div[3]/div[2]/div/div[2]/div/div/div[2]")
+		# self.browser.clickByXPath("/html/body/div[1]/div/div/div[3]/div[2]/div/div[2]/div/div/div[2]")
 
 	def __makeOrder(self, sportsName, timeList, courtList, orderDate, orderTimeList):
 		orderEnable = False
@@ -57,6 +57,8 @@ class PKUVenue():
 			timeTableRow = timeList.index(ot)+1
 			courtSelected = False
 			for page in range(0, len(courtList)):
+				# waiting for the table to show up
+				self.browser.findElementByXPath("/html/body/div[1]/div/div/div[3]/div[2]/div/div[2]/div[3]/div[1]/div/div/div/div/div/table/tbody/tr[15]/td[1]/div")
 				for courtTablecolumn in range(2, len(courtList[page])+2):
 					courtBlockElment = self.browser.findElementByXPath("/html/body/div[1]/div/div/div[3]/div[2]/div/div[2]/div[3]/div[1]/div/div/div/div/div/table/tbody/tr[%d]/td[%d]/div" % (timeTableRow, courtTablecolumn))
 					if "free" in courtBlockElment.get_attribute('class'):
@@ -74,6 +76,7 @@ class PKUVenue():
 				print("without court left at %s %s" % (orderDate, ot))
 			else:
 				orderEnable = True
+					
 		return orderEnable
 
 	def _order(self, sportsName, venueUrl, timeList, courtList, orderDate, orderTimeList):
@@ -83,7 +86,7 @@ class PKUVenue():
 			self.__submitOrder()
 
 	def orderBadmintonOnce(self, orderDate, orderTimeList):
-		timeList = ["8:00-09:00","9:00-10:00","10:00-11:00","11:00-12:00","12:00-13:00","13:00-14:00","14:00-15:00","15:00-16:00","16:00-17:00","17:00-18:00","18:00-19:00","19:00-20:00","20:00-21:00","21:00-22:00"]
+		timeList = ["8:00-9:00","9:00-10:00","10:00-11:00","11:00-12:00","12:00-13:00","13:00-14:00","14:00-15:00","15:00-16:00","16:00-17:00","17:00-18:00","18:00-19:00","19:00-20:00","20:00-21:00","21:00-22:00"]
 		courtList = [["1号", "2号", "3号", "4号", "5号"], ["6号", "7号", "8号", "9号", "10号"], ["11号", "12号"]]
 		self._order("羽毛球", "https://epe.pku.edu.cn/venue/pku/venue-reservation/60", timeList, courtList, orderDate, orderTimeList)
 
@@ -94,7 +97,7 @@ class PKUVenue():
 				self.orderBadmintonOnce(orderDate, reqDict[orderDate][i:i+2])
 
 	def orderBasketballOnce(self, orderDate, orderTimeList):
-		timeList = ["8:00-09:00","9:00-10:00","10:00-11:00","11:00-12:00","12:00-13:00","13:00-14:00","14:00-15:00","15:00-16:00","16:00-17:00","17:00-18:00","18:00-19:00","19:00-20:00","20:00-21:00","21:00-22:00"]
+		timeList = ["8:00-9:00","9:00-10:00","10:00-11:00","11:00-12:00","12:00-13:00","13:00-14:00","14:00-15:00","15:00-16:00","16:00-17:00","17:00-18:00","18:00-19:00","19:00-20:00","20:00-21:00","21:00-22:00"]
 		courtList = [["北1", "南1", "北2", "南2"]]
 		self._order("篮球", "https://epe.pku.edu.cn/venue/pku/venue-reservation/68", timeList, courtList, orderDate, orderTimeList)
 
