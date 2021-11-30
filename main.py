@@ -127,7 +127,7 @@ class PKUVenue():
 			"北2" : {"page": 0, "column": 3},
 			"南2" : {"page": 0, "column": 4}
 		}
-		self._order("篮球", "https://epe.pku.edu.cn/venue/pku/venue-reservation/68", timeList, courtList, orderDate, orderTimeList)
+		self._order("篮球", "https://epe.pku.edu.cn/venue/pku/venue-reservation/68", timeList, courtPriorityList, courtIndexDict, orderDate, orderTimeList)
 
 
 	def orderBasketball(self, reqList):
