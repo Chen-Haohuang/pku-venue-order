@@ -69,7 +69,7 @@ class Browser():
     def gotoPage(self, url):
         print("goto page %s" % url)
         self.browser.execute_script("window.open(\"%s\")" % url)
-        self.browser.switch_to_window(self.browser.window_handles[-1])
+        self.browser.switch_to.window(self.browser.window_handles[-1])
 
     def close(self):
         try:
