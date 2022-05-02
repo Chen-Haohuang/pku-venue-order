@@ -1,7 +1,11 @@
 # -*- coding: utf-8
+from lib2to3.pgen2 import driver
+import re
 from browser import Browser
 import json, time
 from datetime import datetime
+import numpy as np
+import cv2
 
 class PKUVenue():
 	def __init__(self, config):
@@ -50,7 +54,8 @@ class PKUVenue():
 
 		print("submiting order ....... ")
 		self.browser.typeByXPath("/html/body/div[1]/div/div/div[3]/div[2]/div/div[2]/form/div/div[4]/div/div/div/div/input", self.phone)
-		# self.browser.clickByXPath("/html/body/div[1]/div/div/div[3]/div[2]/div/div[2]/div/div/div[2]")
+		self.browser.clickByXPath("/html/body/div[1]/div/div/div[3]/div[2]/div/div[2]/div/div/div[2]")
+
 
 	def __makeOrder(self, sportsName, timeList, courtPriorityList, courtIndexDict, orderDate, orderTimeList):
 		orderEnable = False
@@ -116,6 +121,7 @@ class PKUVenue():
 		for orderDate in reqDict:
 			for i in range(0, len(reqDict[orderDate]), 2):
 				self.orderBadmintonOnce(orderDate, reqDict[orderDate][i:i+2])
+				self.slideCaptchaValid()
 
 	def orderBasketballOnce(self, orderDate, orderTimeList):
 		timeList = ["8:00-9:00","9:00-10:00","10:00-11:00","11:00-12:00","12:00-13:00","13:00-14:00","14:00-15:00","15:00-16:00","16:00-17:00","17:00-18:00","18:00-19:00","19:00-20:00","20:00-21:00","21:00-22:00"]
@@ -135,7 +141,69 @@ class PKUVenue():
 		for orderDate in reqDict:
 			for i in range(0, len(reqDict[orderDate]), 2):
 				self.orderBasketballOnce(orderDate, reqDict[orderDate][i:i+2])
+				self.slideCaptchaValid()
 
+	def _countDistance(self, template, target):
+		encode_img = np.asarray(bytearray(template), dtype="uint8")
+		template = cv2.imdecode(encode_img, cv2.IMREAD_UNCHANGED)
+		# cv2.imwrite('template.png', template)
+		template = cv2.cvtColor(template, cv2.COLOR_BGR2GRAY)
+		encode_img = np.asarray(bytearray(target), dtype="uint8")
+		target = cv2.imdecode(encode_img, cv2.IMREAD_UNCHANGED)
+		# cv2.imwrite('target.png', target)
+		target = cv2.cvtColor(target, cv2.COLOR_BGR2GRAY)
+		w, h = target.shape[::1]
+		left = w
+		right = 0
+		up = h
+		down = 0
+		for row in range(0, h):
+			for col in range(0, w):
+				if target[col][row] != 0:
+					if left > col:
+						left = col
+					if right < col:
+						right = col
+					if up > row:
+						up = row
+					if down < row:
+						down = row
+		result = cv2.matchTemplate(target[left:right, up:down], template, cv2.TM_CCOEFF_NORMED)
+		_, y = np.unravel_index(result.argmax(), result.shape)
+		# x, y = np.unravel_index(result.argmax(), result.shape)
+		# cv2.rectangle(template, (y, x), (y+right-left, x+down-up), (7, 249, 151), 2)
+		# cv2.imwrite('targ.png', target[left:right, up:down])
+		# cv2.imwrite('temp.png', template)
+		# cv2.imwrite('show.png', template)
+		return y
+
+
+	def slideCaptchaValid(self):
+		valid = False
+		padding = 5
+		while not valid:
+			print("slide Captcha ing ......... ")
+			_ = self.browser.browser.get_log("performance")
+			distance = self._countDistance(self.browser.getImgByteDataByXPath("/html/body/div[1]/div/div/div[3]/div[2]/div/div[2]/div[2]/div/div[2]/div/div[1]/div/img", "template.png"),
+										self.browser.getImgByteDataByXPath("/html/body/div[1]/div/div/div[3]/div[2]/div/div[2]/div[2]/div/div[2]/div/div[2]/div/div/div/img", "target.png"))
+			self.browser.dragOffsetByXPath("/html/body/div[1]/div/div/div[3]/div[2]/div/div[2]/div[2]/div/div[2]/div/div[2]/div/div", distance + padding)
+
+			# for retry ....
+			waiting = True
+			while waiting:
+				requests = self.browser.browser.get_log("performance")
+				for r in requests:
+					r = json.loads(r['message'])['message']
+					if r["method"] == 'Network.responseReceived' and r['params']['response']['url'] == "https://epe.pku.edu.cn/venue-server/api/captcha/check":
+						response_body = self.browser.browser.execute_cdp_cmd('Network.getResponseBody', {'requestId': r['params']['requestId']})['body']
+						response_body = json.loads(response_body)
+						if response_body["data"]["success"]:
+							print("slide Captcha Success !!!!!!! ")
+							valid = True
+						waiting = False
+			# retry after 2s ....
+			time.sleep(2)
+						
 	def outputOrderStatement(self):
 		for i in range(0, len(self.orderStatement)):
 			print("{:^52}".format(" " + "-" * 50 + " "))

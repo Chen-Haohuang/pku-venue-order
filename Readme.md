@@ -27,8 +27,11 @@
 ```
 
 ### 运行
-main.py line 51为提交订单按钮，非尝试运行取消注释，预约成功后应在十分钟内手动付款。
-填充完成config.json。在238服务器上，google chrome环境已有。装好相应python package即可。
+预约成功后应在十分钟内手动付款。
+填充完成config.json。装好相应python package即可。
+需要和Google Chrome版本相对应的chromedriver   https://chromedriver.chromium.org/
+由于滑块验证，无法使用headless模式
+据说频繁验证容易封号，谨慎使用
 ```shell
 python main.py
 ```

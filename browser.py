@@ -1,13 +1,22 @@
 # -*- coding: utf-8
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver import ActionChains
+import base64
+import cv2
+import numpy as np
 
 class Browser():
     def __init__(self):
         chrome_options=Options()
-        chrome_options.add_argument('--headless')
-        self.browser = webdriver.Chrome(chrome_options=chrome_options, executable_path="./chromedriver")
-
+        caps = {
+            'browserName': 'chrome',
+            'version': '',
+            'platform': 'ANY',
+            'goog:loggingPrefs': {'performance': 'ALL'},
+            'goog:chromeOptions': {'extensions': [], 'args': ['']}
+        }
+        self.browser = webdriver.Chrome(desired_capabilities=caps, chrome_options=chrome_options, executable_path="./chromedriver")
 
     def clickByXPath(self, xpath):
         while True:
@@ -77,3 +86,28 @@ class Browser():
             self.browser.close()
         except:
             pass
+
+    def dragOffsetByXPath(self, xpath, offset):
+        while True:
+            try:
+                element = self.browser.find_element_by_xpath(xpath)
+                action_chains = ActionChains(self.browser)
+                action_chains.drag_and_drop_by_offset(element, offset, 0).perform()
+                return
+            except Exception as e:
+                # print(e)
+                pass
+
+    def getImgByteDataByXPath(self, xpath, name):
+        while True:
+            try:
+                element = self.browser.find_element_by_xpath(xpath)
+                base64_data = element.get_attribute("src").split(",")[1]
+                byte_data = base64.b64decode(base64_data)
+                return byte_data
+            except Exception as e:
+                # print(e)
+                pass
+
+
+            
